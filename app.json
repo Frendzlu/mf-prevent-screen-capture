@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.mfpreventscreencapture"
+  },
+  "ios": {
+    "bundleIdentifier": "com.anonymous.mfpreventscreencapture"
+  }
+}

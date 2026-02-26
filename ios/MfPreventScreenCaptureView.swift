@@ -1,38 +1,34 @@
 import ExpoModulesCore
-import WebKit
+import UIKit
 
-// This view will be used as a native component. Make sure to inherit from `ExpoView`
-// to apply the proper styling (e.g. border radius and shadows).
 class MfPreventScreenCaptureView: ExpoView {
-  let webView = WKWebView()
-  let onLoad = EventDispatcher()
-  var delegate: WebViewDelegate?
+  private static var refCount = 0
+  private weak var securedWindow: UIWindow?
+  private var isAttached = false
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
-    clipsToBounds = true
-    delegate = WebViewDelegate { url in
-      self.onLoad(["url": url])
-    }
-    webView.navigationDelegate = delegate
-    addSubview(webView)
   }
 
-  override func layoutSubviews() {
-    webView.frame = bounds
-  }
-}
-
-class WebViewDelegate: NSObject, WKNavigationDelegate {
-  let onUrlChange: (String) -> Void
-
-  init(onUrlChange: @escaping (String) -> Void) {
-    self.onUrlChange = onUrlChange
-  }
-
-  func webView(_ webView: WKWebView, didFinish navigation: WKNavigation) {
-    if let url = webView.url {
-      onUrlChange(url.absoluteString)
+  override func didMoveToWindow() {
+    super.didMoveToWindow()
+    if let window = self.window {
+      if !isAttached {
+        isAttached = true
+        MfPreventScreenCaptureView.refCount += 1
+      }
+      window.isSecure = true
+      securedWindow = window
+    } else {
+      if isAttached {
+        isAttached = false
+        MfPreventScreenCaptureView.refCount -= 1
+      }
+      if MfPreventScreenCaptureView.refCount <= 0 {
+        MfPreventScreenCaptureView.refCount = 0
+        securedWindow?.isSecure = false
+      }
+      securedWindow = nil
     }
   }
 }

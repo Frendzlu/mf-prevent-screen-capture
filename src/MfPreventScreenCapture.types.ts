@@ -1,19 +1,7 @@
-import type { StyleProp, ViewStyle } from 'react-native';
-
-export type OnLoadEventPayload = {
-  url: string;
-};
-
-export type MfPreventScreenCaptureModuleEvents = {
-  onChange: (params: ChangeEventPayload) => void;
-};
-
-export type ChangeEventPayload = {
-  value: string;
-};
+import type { StyleProp, ViewStyle } from "react-native";
+import type { ReactNode } from "react";
 
 export type MfPreventScreenCaptureViewProps = {
-  url: string;
-  onLoad: (event: { nativeEvent: OnLoadEventPayload }) => void;
+  children?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };

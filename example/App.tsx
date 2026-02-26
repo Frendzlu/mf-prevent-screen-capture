@@ -1,73 +1,80 @@
-import { useEvent } from 'expo';
-import MfPreventScreenCapture, { MfPreventScreenCaptureView } from 'mf-prevent-screen-capture';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { MfPreventScreenCaptureView } from "mf-prevent-screen-capture";
+import { NavigationContainer } from "@react-navigation/native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StyleSheet, Text, View } from "react-native";
 
-export default function App() {
-  const onChangePayload = useEvent(MfPreventScreenCapture, 'onChange');
+const Tab = createBottomTabNavigator();
 
+function ProtectedScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.header}>Module API Example</Text>
-        <Group name="Constants">
-          <Text>{MfPreventScreenCapture.PI}</Text>
-        </Group>
-        <Group name="Functions">
-          <Text>{MfPreventScreenCapture.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await MfPreventScreenCapture.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-        <Group name="Events">
-          <Text>{onChangePayload?.value}</Text>
-        </Group>
-        <Group name="Views">
-          <MfPreventScreenCaptureView
-            url="https://www.example.com"
-            onLoad={({ nativeEvent: { url } }) => console.log(`Loaded: ${url}`)}
-            style={styles.view}
-          />
-        </Group>
-      </ScrollView>
-    </SafeAreaView>
+    <MfPreventScreenCaptureView style={styles.flex}>
+      <View style={styles.screen}>
+        <Text style={styles.title}>Protected</Text>
+        <Text style={styles.body}>This content is hidden in screenshots.</Text>
+      </View>
+    </MfPreventScreenCaptureView>
   );
 }
 
-function Group(props: { name: string; children: React.ReactNode }) {
+function UnprotectedScreen() {
   return (
-    <View style={styles.group}>
-      <Text style={styles.groupHeader}>{props.name}</Text>
-      {props.children}
+    <View style={styles.screen}>
+      <Text style={styles.title}>Unprotected</Text>
+      <Text style={styles.body}>This content is visible in screenshots.</Text>
     </View>
   );
 }
 
-const styles = {
-  header: {
-    fontSize: 30,
-    margin: 20,
-  },
-  groupHeader: {
-    fontSize: 20,
-    marginBottom: 20,
-  },
-  group: {
-    margin: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#eee',
-  },
-  view: {
-    flex: 1,
-    height: 200,
-  },
-};
+function ProtectedScreen2() {
+  return (
+    <MfPreventScreenCaptureView style={styles.flex}>
+      <View style={styles.screen}>
+        <Text style={styles.title}>Protected 2</Text>
+        <Text style={styles.body}>
+          This is another protected tab. Unmounting one protected tab should not
+          disable protection while this one is still mounted.
+        </Text>
+      </View>
+    </MfPreventScreenCaptureView>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={{
+            headerShown: false,
+            tabBarIconStyle: { display: "none" },
+            tabBarLabelPosition: "beside-icon",
+          }}
+        >
+          <Tab.Screen
+            name="Protected"
+            component={ProtectedScreen}
+            options={{ headerShown: false }}
+          />
+          <Tab.Screen
+            name="Unprotected"
+            component={UnprotectedScreen}
+            options={{ headerShown: false }}
+          />
+          <Tab.Screen
+            name="Protected 2"
+            component={ProtectedScreen2}
+            options={{ headerShown: false }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  screen: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  title: { fontSize: 24, fontWeight: "700" },
+  body: { fontSize: 15, color: "#555" },
+});

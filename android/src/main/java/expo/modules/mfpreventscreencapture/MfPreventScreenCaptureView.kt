@@ -1,30 +1,39 @@
 package expo.modules.mfpreventscreencapture
 
+import android.app.Activity
 import android.content.Context
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.content.ContextWrapper
+import android.view.WindowManager
 import expo.modules.kotlin.AppContext
-import expo.modules.kotlin.viewevent.EventDispatcher
 import expo.modules.kotlin.views.ExpoView
 
 class MfPreventScreenCaptureView(context: Context, appContext: AppContext) : ExpoView(context, appContext) {
-  // Creates and initializes an event dispatcher for the `onLoad` event.
-  // The name of the event is inferred from the value and needs to match the event name defined in the module.
-  private val onLoad by EventDispatcher()
 
-  // Defines a WebView that will be used as the root subview.
-  internal val webView = WebView(context).apply {
-    layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-    webViewClient = object : WebViewClient() {
-      override fun onPageFinished(view: WebView, url: String) {
-        // Sends an event to JavaScript. Triggers a callback defined on the view component in JavaScript.
-        onLoad(mapOf("url" to url))
-      }
-    }
+  companion object {
+    private var refCount = 0
   }
 
-  init {
-    // Adds the WebView to the view hierarchy.
-    addView(webView)
+  private fun Context.findActivity(): Activity? {
+    var ctx = this
+    while (ctx is ContextWrapper) {
+      if (ctx is Activity) return ctx
+      ctx = ctx.baseContext
+    }
+    return null
+  }
+
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    refCount++
+    context.findActivity()?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+  }
+
+  override fun onDetachedFromWindow() {
+    super.onDetachedFromWindow()
+    refCount--
+    if (refCount <= 0) {
+      refCount = 0
+      context.findActivity()?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    }
   }
 }
