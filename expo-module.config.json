@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["MfPreventScreenCaptureModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.mfpreventscreencapture.MfPreventScreenCaptureModule"]
+  }
+}

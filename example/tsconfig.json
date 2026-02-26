@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "mf-prevent-screen-capture": ["../src/index"],
+      "mf-prevent-screen-capture/*": ["../src/*"]
+    }
+  }
+}
