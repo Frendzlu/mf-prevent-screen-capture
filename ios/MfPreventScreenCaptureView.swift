@@ -3,8 +3,8 @@ import UIKit
 
 class MfPreventScreenCaptureView: ExpoView {
   private static var refCount = 0
-  private weak var securedWindow: UIWindow?
   private var isAttached = false
+  private var secureField: UITextField?
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -12,13 +12,12 @@ class MfPreventScreenCaptureView: ExpoView {
 
   override func didMoveToWindow() {
     super.didMoveToWindow()
-    if let window = self.window {
+    if self.window != nil {
       if !isAttached {
         isAttached = true
         MfPreventScreenCaptureView.refCount += 1
       }
-      window.isSecure = true
-      securedWindow = window
+      enableScreenProtection()
     } else {
       if isAttached {
         isAttached = false
@@ -26,9 +25,35 @@ class MfPreventScreenCaptureView: ExpoView {
       }
       if MfPreventScreenCaptureView.refCount <= 0 {
         MfPreventScreenCaptureView.refCount = 0
-        securedWindow?.isSecure = false
+        disableScreenProtection()
       }
-      securedWindow = nil
     }
+  }
+
+  private func enableScreenProtection() {
+    guard secureField == nil else { return }
+
+    let field = UITextField()
+    field.isSecureTextEntry = true
+    field.isUserInteractionEnabled = false
+
+    guard let secureLayer = field.layer.sublayers?.first else { return }
+
+    secureLayer.frame = UIScreen.main.bounds
+    layer.superlayer?.addSublayer(secureLayer)
+
+    // Move all existing sublayers into the secure layer
+    if let sublayers = layer.superlayer?.sublayers {
+      for sublayer in sublayers where sublayer != secureLayer {
+        secureLayer.addSublayer(sublayer)
+      }
+    }
+
+    secureField = field
+  }
+
+  private func disableScreenProtection() {
+    secureField?.isSecureTextEntry = false
+    secureField = nil
   }
 }
