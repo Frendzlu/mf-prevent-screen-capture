@@ -32,8 +32,8 @@ function ProtectedScreen2() {
       <View style={styles.screen}>
         <Text style={styles.title}>Protected 2</Text>
         <Text style={styles.body}>
-          This is another protected tab. Unmounting one protected tab should not
-          disable protection while this one is still mounted.
+          This is another protected tab. It should also be hidden in
+          screenshots.
         </Text>
       </View>
     </MfPreventScreenCaptureView>
